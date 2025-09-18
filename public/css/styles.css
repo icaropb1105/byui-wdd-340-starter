@@ -175,3 +175,35 @@ main h1 {
 footer p{
   font-size: 20px;
 }
+
+
+
+
+
+
+
+
+
+#inv-display {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 1rem;
+  padding: 0;
+  list-style-type: none;
+}
+
+#inv-display li {
+  border: 1px solid #ccc;
+  padding: 1rem;
+  background-color: #f8f8f8;
+  text-align: center;
+}
+
+#inv-display img {
+  max-width: 100%;
+  height: auto;
+}
+
+.namePrice {
+  margin-top: 0.5rem;
+}

@@ -1,4 +1,4 @@
-const invModel = require("../models/inventory-model")
+const invModel = require("../models/inventory-model");
 
 const utilities = {}
 
@@ -6,11 +6,11 @@ const utilities = {}
  * Constructs the nav HTML unordered list
  ************************** */
 utilities.getNav = async function () {
-  let data = await invModel.getClassifications()
-  let list = "<ul>"
-  list += '<li><a href="/" title="Home page">Home</a></li>'
+  let data = await invModel.getClassifications();
+  let list = "<ul>";
+  list += '<li><a href="/" title="Home page">Home</a></li>';
   data.rows.forEach((row) => {
-    list += "<li>"
+    list += "<li>";
     list +=
       '<a href="/inv/type/' +
       row.classification_id +
@@ -18,11 +18,11 @@ utilities.getNav = async function () {
       row.classification_name +
       ' vehicles">' +
       row.classification_name +
-      "</a>"
-    list += "</li>"
-  })
-  list += "</ul>"
-  return list
+      "</a>";
+    list += "</li>";
+  });
+  list += "</ul>";
+  return list;
 }
 
 /* **************************************
@@ -85,6 +85,20 @@ utilities.buildClassificationGrid = async function (data) {
   return grid
 }
 
+/* **************************************
+ * Build classification list for select dropdown (added because needed)
+ * ************************************ */
+utilities.buildClassificationList = async function () {
+  let data = await invModel.getClassifications();
+  let list = "<select name='classification_id' id='classificationList'>";
+  list += "<option value=''>Choose a Classification</option>";
+  data.rows.forEach((row) => {
+    list += `<option value='${row.classification_id}'>${row.classification_name}</option>`;
+  });
+  list += "</select>";
+  return list;
+}
+
 /* ****************************************
  * Middleware For Handling Errors
  * Wrap other function in this for 
@@ -92,4 +106,4 @@ utilities.buildClassificationGrid = async function (data) {
  **************************************** */
 utilities.handleErrors = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next)
 
-module.exports = utilities
+module.exports = utilities;

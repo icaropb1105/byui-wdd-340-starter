@@ -13,7 +13,7 @@ const path = require("path");
 const session = require("express-session");
 const flash = require("connect-flash");
 const pgSession = require("connect-pg-simple")(session);
-const bodyParser = require("body-parser"); // ✅ Adicionado para ler body dos forms
+const bodyParser = require("body-parser");
 
 const app = express();
 
@@ -42,14 +42,16 @@ app.use(
   })
 );
 
-// Express Messages Middleware
+// Flash Messages Middleware
 app.use(flash());
 app.use(function (req, res, next) {
   res.locals.messages = require("express-messages")(req, res);
+  res.locals.message = req.flash("message"); // ✅ Adicionado
+  res.locals.error = req.flash("error");     // ✅ Opcional para erros
   next();
 });
 
-// Middleware para definir a variável nav para todas as views
+// Global Navigation Middleware
 app.use(async (req, res, next) => {
   try {
     res.locals.nav = await utilities.getNav();
@@ -59,28 +61,26 @@ app.use(async (req, res, next) => {
   }
 });
 
-// ✅ Body-parser Middleware (essencial para ler dados do <form>)
 app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true })); // application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: true }));
+
+// Static files
+app.use(express.static(path.join(__dirname, "public")));
 
 /* *****************************
  * View Engine and Templates
  *******************************/
 app.set("view engine", "ejs");
 app.use(expressLayouts);
-app.set("layout", "./layouts/layout"); // path relativo à pasta views
-app.set("views", path.join(__dirname, "views")); // garante que o Express acha as views
-
-/* ***********************
- * Static Routes
- *************************/
-app.use(static);
+app.set("layout", "./layouts/layout");
+app.set("views", path.join(__dirname, "views"));
 
 /* ***********************
  * Routes
  *************************/
+app.use(static);
 
-// Index route
+// Home route
 app.get("/", utilities.handleErrors(baseController.buildHome));
 
 // Inventory routes
@@ -89,17 +89,16 @@ app.use("/inv", inventoryRoute);
 // Account routes
 app.use("/account", accountRoute);
 
-// File Not Found Route - deve estar após todas as rotas
+// 404 Error - Page not found
 app.use(async (req, res, next) => {
   next({ status: 404, message: "Sorry, we appear to have lost that page." });
 });
 
 /* ***********************
  * Express Error Handler
- * Place after all other middleware
  *************************/
 app.use(async (err, req, res, next) => {
-  let nav = await utilities.getNav(); // opcional, mas já temos nav em res.locals
+  let nav = await utilities.getNav();
   console.error(`Error at: "${req.originalUrl}": ${err.message}`);
 
   let message;
@@ -112,19 +111,18 @@ app.use(async (err, req, res, next) => {
   res.status(err.status || 500).render("errors/error", {
     title: err.status || "Server Error",
     message,
-    nav, // ou res.locals.nav, se preferir
+    nav,
   });
 });
 
 /* ***********************
  * Local Server Information
- * Values from .env (environment) file
  *************************/
 const port = process.env.PORT || 5500;
 const host = process.env.HOST || "localhost";
 
 /* ***********************
- * Log statement to confirm server operation
+ * Start Server
  *************************/
 app.listen(port, () => {
   console.log(`app listening on ${host}:${port}`);

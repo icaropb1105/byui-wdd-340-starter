@@ -1,0 +1,14 @@
+<h1>Account Management</h1>
+
+<% if (Array.isArray(messages)) { %>
+  <% messages.forEach(function(message) { %>
+    <p class="notice"><%= message %></p>
+  <% }) %>
+<% } %>
+
+
+<p>Welcome, <%= account.account_firstname %> <%= account.account_lastname %>!</p>
+<p>Your email: <%= account.account_email %></p>
+
+<p>You're logged in.</p>
+

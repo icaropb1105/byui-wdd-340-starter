@@ -3,7 +3,9 @@ const { body, validationResult } = require("express-validator");
 
 const validate = {};
 
-// Validation and sanitization rules for registration
+/* *************************************
+ * Validation and sanitization rules for registration
+ * ************************************* */
 validate.registrationRules = () => {
   return [
     body("account_firstname")
@@ -42,20 +44,63 @@ validate.registrationRules = () => {
   ];
 };
 
-// Function to check for errors after the rules
+/* *************************************
+ * Validation and sanitization rules for login
+ * ************************************* */
+validate.loginRules = () => {
+  return [
+    body("account_email")
+      .trim()
+      .notEmpty()
+      .withMessage("Email is required.")
+      .isEmail()
+      .withMessage("Please enter a valid email.")
+      .normalizeEmail()
+      .escape(),
+
+    body("account_password")
+      .trim()
+      .notEmpty()
+      .withMessage("Password cannot be empty."),
+  ];
+};
+
+/* *************************************
+ * Check for errors after registration validation
+ * ************************************* */
 validate.checkRegData = async (req, res, next) => {
   const { account_firstname, account_lastname, account_email } = req.body;
-  let errors = validationResult(req);
+  const errors = validationResult(req);
 
   if (!errors.isEmpty()) {
-    let nav = await utilities.getNav();
-    return res.render("account/register", {
-      errors,
+    const nav = await utilities.getNav();
+    return res.status(400).render("account/register", {
       title: "Register",
       nav,
+      errors: errors.array(), 
       account_firstname,
       account_lastname,
       account_email,
+    });
+  }
+  next();
+};
+
+/* *************************************
+ * Check for errors after login validation
+ * ************************************* */
+validate.checkLoginData = async (req, res, next) => {
+  const { account_email } = req.body;
+  const errors = validationResult(req);
+
+  if (!errors.isEmpty()) {
+    const nav = await utilities.getNav();
+    return res.status(400).render("account/login", {
+      title: "Login",
+      nav,
+      errors: errors.array(), // pass errors array to the view
+      account_email,
+      messages: req.flash("notice"),
     });
   }
   next();

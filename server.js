@@ -6,6 +6,7 @@
 /* ***********************
  * Require Statements
  *************************/
+const cookieParser = require("cookie-parser");
 const express = require("express");
 const expressLayouts = require("express-ejs-layouts");
 const env = require("dotenv").config();
@@ -29,6 +30,7 @@ const pool = require("./database/");
  ************************/
 
 // Session Middleware
+app.use(cookieParser());
 app.use(
   session({
     store: new pgSession({
@@ -46,8 +48,8 @@ app.use(
 app.use(flash());
 app.use(function (req, res, next) {
   res.locals.messages = require("express-messages")(req, res);
-  res.locals.message = req.flash("message"); // ✅ Adicionado
-  res.locals.error = req.flash("error");     // ✅ Opcional para erros
+  res.locals.message = req.flash("message"); 
+  res.locals.error = req.flash("error");     
   next();
 });
 
@@ -60,6 +62,9 @@ app.use(async (req, res, next) => {
     next(error);
   }
 });
+
+// JWT Token Check Middleware 
+app.use(utilities.checkJWTToken);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

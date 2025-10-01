@@ -11,7 +11,7 @@ router.get("/login", utilities.handleErrors(accountController.buildLogin));
 // Process login - POST with validation
 router.post(
   "/login",
-  regValidate.loginRules ? regValidate.loginRules() : [], // Make sure this exists or empty array
+  regValidate.loginRules ? regValidate.loginRules() : [],
   regValidate.checkLoginData ? regValidate.checkLoginData : (req, res, next) => next(),
   utilities.handleErrors(accountController.accountLogin)
 );
@@ -27,7 +27,12 @@ router.post(
   utilities.handleErrors(accountController.processRegister)
 );
 
-// Account main page - GET with JWT check middleware
-router.get("/", utilities.checkJWTToken, utilities.handleErrors(accountController.accountView));
+// Account main page - GET with JWT and Login check middleware
+router.get(
+  "/",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.handleErrors(accountController.accountView)
+);
 
 module.exports = router;

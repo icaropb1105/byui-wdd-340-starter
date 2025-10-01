@@ -1,5 +1,4 @@
 const invModel = require("../models/inventory-model");
-
 const jwt = require("jsonwebtoken");
 require("dotenv").config();
 
@@ -89,7 +88,7 @@ utilities.buildClassificationGrid = async function (data) {
 }
 
 /* **************************************
- * Build classification list for select dropdown (added because needed)
+ * Build classification list for select dropdown
  * ************************************ */
 utilities.buildClassificationList = async function () {
   let data = await invModel.getClassifications();
@@ -109,6 +108,9 @@ utilities.buildClassificationList = async function () {
  **************************************** */
 utilities.handleErrors = fn => (req, res, next) => Promise.resolve(fn(req, res, next)).catch(next)
 
+/* ****************************************
+ * JWT Token Check Middleware
+ **************************************** */
 utilities.checkJWTToken = (req, res, next) => {
   if (req.cookies.jwt) {
     jwt.verify(
@@ -126,6 +128,18 @@ utilities.checkJWTToken = (req, res, next) => {
       })
   } else {
     next()
+  }
+}
+
+/* ****************************************
+ *  Check Login Middleware
+ **************************************** */
+utilities.checkLogin = (req, res, next) => {
+  if (res.locals.loggedin) {
+    next()
+  } else {
+    req.flash("notice", "Please log in.")
+    return res.redirect("/account/login")
   }
 }
 

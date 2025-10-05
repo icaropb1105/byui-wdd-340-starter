@@ -1,5 +1,6 @@
 const utilities = require("../utilities");
 const accountModel = require("../models/account-model");
+const invModel = require("../models/inventory-model"); 
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
@@ -35,7 +36,7 @@ accountController.accountLogin = async (req, res) => {
   try {
     const passwordMatch = await bcrypt.compare(account_password, accountData.account_password);
     if (passwordMatch) {
-      delete accountData.account_password; // remove password before token
+      delete accountData.account_password; 
       const accessToken = jwt.sign(accountData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 3600 }); // 1 hour
 
       const cookieOptions = {
@@ -44,7 +45,7 @@ accountController.accountLogin = async (req, res) => {
       };
 
       if (process.env.NODE_ENV !== "development") {
-        cookieOptions.secure = true; // use secure cookie in production
+        cookieOptions.secure = true;
       }
 
       res.cookie("jwt", accessToken, cookieOptions);
@@ -111,7 +112,7 @@ accountController.processRegister = async (req, res, next) => {
   }
 };
 
-// Build account view page (user dashboard)
+// Build account view page 
 accountController.accountView = async (req, res, next) => {
   try {
     // Account data from verified JWT token
@@ -132,11 +133,15 @@ accountController.accountView = async (req, res, next) => {
 
     const nav = await utilities.getNav();
 
+    const classificationData = await invModel.getClassifications();
+    const classificationSelect = classificationData.rows;
+
     res.render("account/index", {
       title: "Account Management",
       nav,
       account: accountDetails,
-      message: req.flash("notice"),
+      messages: req.flash("notice"),
+      classificationSelect,  
     });
   } catch (error) {
     next(error);

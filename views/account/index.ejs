@@ -1,14 +1,31 @@
-<h1>Account Management</h1>
+<h1>Inventory Management</h1>
 
-<% if (Array.isArray(messages)) { %>
-  <% messages.forEach(function(message) { %>
-    <p class="notice"><%= message %></p>
+<% if (messages.success && messages.success.length > 0) { %>
+  <% messages.success.forEach(function (msg) { %>
+    <p class="notice success"><%= msg %></p>
   <% }) %>
 <% } %>
 
+<% if (messages.error && messages.error.length > 0) { %>
+  <% messages.error.forEach(function (msg) { %>
+    <p class="notice error"><%= msg %></p>
+  <% }) %>
+<% } %>
 
-<p>Welcome, <%= account.account_firstname %> <%= account.account_lastname %>!</p>
-<p>Your email: <%= account.account_email %></p>
+<a href="/inv/add-classification">Add New Classification</a><br>
+<a href="/inv/add-inventory">Add New Vehicle</a>
 
-<p>You're logged in.</p>
+<h2>Manage Inventory</h2>
+<p>Select a classification to see the inventory items.</p>
 
+<select id="classificationList">
+  <option value="">-- Select Classification --</option>
+  <% classificationSelect.forEach(function(classification) { %>
+    <option value="<%= classification.classification_id %>"><%= classification.classification_name %></option>
+  <% }) %>
+</select>
+
+<table id="inventoryDisplay"></table>
+
+<noscript>JavaScript must be enabled to use this page.</noscript>
+<script src="/js/inventory.js"></script>

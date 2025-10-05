@@ -1,14 +1,35 @@
 <main>
   <h1><%= title %></h1>
 
-  <% if (message && message.length > 0) { %>
-    <div class="alert alert-success">
-      <%= message %>
-    </div>
+  <% if (messages && (messages.success.length > 0 || messages.error.length > 0)) { %>
+    <% messages.success.forEach(msg => { %>
+      <div class="alert alert-success"><%= msg %></div>
+    <% }) %>
+    <% messages.error.forEach(msg => { %>
+      <div class="alert alert-error"><%= msg %></div>
+    <% }) %>
   <% } %>
 
   <ul>
     <li><a href="/inv/add-classification">Add New Classification</a></li>
     <li><a href="/inv/add-inventory">Add New Vehicle</a></li>
   </ul>
+
+  <h2>Manage Inventory</h2>
+  <p>Select a classification to see the inventory items.</p>
+
+  <select id="classificationList">
+    <option value="">-- Select Classification --</option>
+    <% if (classificationSelect && Array.isArray(classificationSelect)) { %>
+      <% classificationSelect.forEach(classification => { %>
+        <option value="<%= classification.classification_id %>"><%= classification.classification_name %></option>
+      <% }) %>
+    <% } %>
+  </select>
+
+  <table id="inventoryDisplay"></table>
+
+  <noscript><p>You must enable JavaScript to use this feature.</p></noscript>
+
+  <script src="/js/inventory.js"></script>
 </main>

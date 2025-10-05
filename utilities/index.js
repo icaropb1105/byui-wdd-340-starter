@@ -101,6 +101,14 @@ utilities.buildClassificationList = async function () {
   return list;
 }
 
+/* **************************************
+ * Return classifications as array (for EJS usage)
+ * ************************************ */
+utilities.getClassificationList = async function () {
+  let data = await invModel.getClassifications();
+  return data.rows; // array de classificações
+}
+
 /* ****************************************
  * Middleware For Handling Errors
  * Wrap other function in this for 

@@ -17,6 +17,16 @@
     </div>
   <% } %>
 
+  <% if (serverError && serverError.length > 0) { %>
+    <div class="alert alert-danger">
+      <ul>
+        <% serverError.forEach(error => { %>
+          <li><%= error %></li>
+        <% }) %>
+      </ul>
+    </div>
+  <% } %>
+
   <form action="/inv/add-inventory" method="POST" novalidate>
     <div class="form-group">
       <label for="classificationList">Classification</label>

@@ -1,6 +1,6 @@
 const utilities = require("../utilities");
 const accountModel = require("../models/account-model");
-const invModel = require("../models/inventory-model"); 
+const invModel = require("../models/inventory-model");
 const jwt = require("jsonwebtoken");
 const bcrypt = require("bcryptjs");
 require("dotenv").config();
@@ -36,7 +36,7 @@ accountController.accountLogin = async (req, res) => {
   try {
     const passwordMatch = await bcrypt.compare(account_password, accountData.account_password);
     if (passwordMatch) {
-      delete accountData.account_password; 
+      delete accountData.account_password;
       const accessToken = jwt.sign(accountData, process.env.ACCESS_TOKEN_SECRET, { expiresIn: 3600 }); // 1 hour
 
       const cookieOptions = {
@@ -115,7 +115,6 @@ accountController.processRegister = async (req, res, next) => {
 // Build account view page 
 accountController.accountView = async (req, res, next) => {
   try {
-    // Account data from verified JWT token
     const accountData = res.locals.accountData;
 
     if (!accountData || !accountData.account_id) {
@@ -123,7 +122,6 @@ accountController.accountView = async (req, res, next) => {
       return res.redirect("/account/login");
     }
 
-    // Get fresh account info from DB by ID
     const accountDetails = await accountModel.getAccountById(accountData.account_id);
 
     if (!accountDetails) {
@@ -132,17 +130,94 @@ accountController.accountView = async (req, res, next) => {
     }
 
     const nav = await utilities.getNav();
-
     const classificationData = await invModel.getClassifications();
     const classificationSelect = classificationData.rows;
 
     res.render("account/index", {
       title: "Account Management",
       nav,
-      account: accountDetails,
+      classificationSelect,
+      account: accountDetails, 
       messages: req.flash("notice"),
-      classificationSelect,  
     });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Build update account page (form)
+accountController.buildUpdateAccount = async (req, res, next) => {
+  const account_id = res.locals.accountData.account_id;
+  try {
+    const account = await accountModel.getAccountById(account_id);
+    if (!account) {
+      req.flash("error", "Account not found.");
+      return res.redirect("/account");
+    }
+    res.render("account/update-account", {
+      title: "Update Account",
+      account,
+      nav: res.locals.nav,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Process update account data
+accountController.updateAccount = async (req, res, next) => {
+  const { first_name, last_name, email } = req.body;
+  const account_id = res.locals.accountData.account_id;
+
+  try {
+    // Check if email already exists for another user
+    const existingAccount = await accountModel.getAccountByEmail(email);
+    if (existingAccount && existingAccount.account_id !== account_id) {
+      req.flash("error", "Email is already in use.");
+      return res.redirect("/account/update-account");
+    }
+
+    const updatedAccount = await accountModel.updateAccount(
+      account_id,
+      first_name,
+      last_name,
+      email
+    );
+
+    if (updatedAccount) {
+      req.flash("message", "Account information updated successfully.");
+      return res.redirect("/account");
+    } else {
+      req.flash("error", "Unable to update account.");
+      return res.redirect("/account/update-account");
+    }
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Build update password page (form)
+accountController.buildUpdatePassword = async (req, res, next) => {
+  res.render("account/update-password", {
+    title: "Change Password",
+    nav: res.locals.nav,
+  });
+};
+
+// Process update password
+accountController.updatePassword = async (req, res, next) => {
+  const { new_password, confirm_password } = req.body;
+  const account_id = res.locals.accountData.account_id;
+
+  if (new_password !== confirm_password) {
+    req.flash("error", "Passwords do not match.");
+    return res.redirect("/account/update-password");
+  }
+
+  try {
+    await accountModel.updatePassword(account_id, new_password);
+    req.flash("message", "Password updated successfully.");
+    return res.redirect("/account");
   } catch (error) {
     next(error);
   }

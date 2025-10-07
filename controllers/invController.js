@@ -49,7 +49,6 @@ invCont.buildDetail = async function (req, res, next) {
 invCont.buildManagement = async function (req, res, next) {
   try {
     let nav = await utilities.getNav();
-    // **Buscamos o array real de classificações do modelo**
     const classificationData = await invModel.getClassifications();
     const classificationSelect = classificationData.rows;
 
@@ -61,7 +60,7 @@ invCont.buildManagement = async function (req, res, next) {
     res.render("./inventory/management", {
       title: "Inventory Management",
       nav,
-      classificationSelect,  // array de objetos
+      classificationSelect,
       messages,
     });
   } catch (error) {
@@ -83,6 +82,7 @@ invCont.buildAddClassification = async function (req, res) {
     messages,
     errors: null,
     classification_name: "",
+    serverError: []
   });
 };
 
@@ -99,6 +99,7 @@ invCont.addClassification = async function (req, res) {
       messages: { success: [], error: [] },
       errors: errors.array(),
       classification_name,
+      serverError: []
     });
   }
 
@@ -115,6 +116,7 @@ invCont.addClassification = async function (req, res) {
       messages: { success: [], error: req.flash("error") },
       errors: [],
       classification_name,
+      serverError: []
     });
   }
 };
@@ -123,7 +125,8 @@ invCont.addClassification = async function (req, res) {
 invCont.buildAddInventory = async function (req, res) {
   const nav = await utilities.getNav();
   const classificationData = await invModel.getClassifications();
-  const classificationSelect = classificationData.rows;
+  // Aqui construí a lista para usar na view
+  const classificationList = await utilities.buildClassificationList();
 
   const messages = {
     success: req.flash("success"),
@@ -134,7 +137,7 @@ invCont.buildAddInventory = async function (req, res) {
     title: "Add New Inventory",
     nav,
     messages,
-    classificationSelect,
+    classificationList,  
     errors: null,
     classification_id: "",
     inv_make: "",
@@ -146,6 +149,7 @@ invCont.buildAddInventory = async function (req, res) {
     inv_price: "",
     inv_miles: "",
     inv_color: "",
+    serverError: [], 
   });
 };
 
@@ -165,8 +169,7 @@ invCont.addInventory = async function (req, res) {
   } = req.body;
 
   const nav = await utilities.getNav();
-  const classificationData = await invModel.getClassifications();
-  const classificationSelect = classificationData.rows;
+  const classificationList = await utilities.buildClassificationList();
 
   const errors = validationResult(req);
   const formValues = {
@@ -187,8 +190,9 @@ invCont.addInventory = async function (req, res) {
       title: "Add New Inventory",
       nav,
       messages: { success: [], error: [] },
-      classificationSelect,
+      classificationList,
       errors: errors.array(),
+      serverError: [],  // evita erro undefined
       ...formValues,
     });
   }
@@ -215,8 +219,9 @@ invCont.addInventory = async function (req, res) {
       title: "Add New Inventory",
       nav,
       messages: { success: [], error: req.flash("error") },
-      classificationSelect,
+      classificationList,
       errors: [],
+      serverError: [],  // evita erro undefined
       ...formValues,
     });
   }
@@ -233,10 +238,7 @@ invCont.getInventoryJSON = async (req, res, next) => {
   }
 };
 
-
-/* ***************************
- *  Build edit inventory view
- * ************************** */
+/* Build edit inventory view */
 invCont.editInventoryView = async function (req, res, next) {
   const inv_id = parseInt(req.params.inv_id);
   const nav = await utilities.getNav();
@@ -248,13 +250,13 @@ invCont.editInventoryView = async function (req, res, next) {
     return next(error);
   }
 
-  const classificationSelect = await utilities.buildClassificationList(itemData.classification_id);
+  const classificationList = await utilities.buildClassificationList(itemData.classification_id);
   const itemName = `${itemData.inv_make} ${itemData.inv_model}`;
 
   res.render("./inventory/edit-inventory", {
     title: "Edit " + itemName,
     nav,
-    classificationList: classificationSelect,
+    classificationList,
     errors: null,
     inv_id: itemData.inv_id,
     inv_make: itemData.inv_make,
@@ -270,9 +272,7 @@ invCont.editInventoryView = async function (req, res, next) {
   });
 };
 
-/* ***************************
- *  Update Inventory Data
- * ************************** */
+/* Update Inventory Data */
 invCont.updateInventory = async function (req, res, next) {
   let nav = await utilities.getNav();
   const {
@@ -308,13 +308,13 @@ invCont.updateInventory = async function (req, res, next) {
     req.flash("success", `The ${itemName} was successfully updated.`);
     res.redirect("/inv/");
   } else {
-    const classificationSelect = await utilities.buildClassificationList(classification_id);
+    const classificationList = await utilities.buildClassificationList(classification_id);
     const itemName = `${inv_make} ${inv_model}`;
     req.flash("error", "Sorry, the update failed.");
     res.status(501).render("inventory/edit-inventory", {
       title: "Edit " + itemName,
       nav,
-      classificationList: classificationSelect,
+      classificationList,
       errors: null,
       inv_id,
       inv_make,
@@ -330,6 +330,5 @@ invCont.updateInventory = async function (req, res, next) {
     });
   }
 };
-
 
 module.exports = invCont;

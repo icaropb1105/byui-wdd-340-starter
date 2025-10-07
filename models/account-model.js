@@ -1,4 +1,5 @@
 const pool = require("../database");
+const bcrypt = require("bcryptjs");
 
 /* *****************************
  * Get account information by email
@@ -57,8 +58,49 @@ async function registerAccount(firstname, lastname, email, password) {
   }
 }
 
+
+async function updateAccount(account_id, first_name, last_name, email) {
+  try {
+    const sql = `
+      UPDATE account
+      SET account_firstname = $1,
+          account_lastname = $2,
+          account_email = $3
+      WHERE account_id = $4
+      RETURNING *;
+    `;
+    const values = [first_name, last_name, email, account_id];
+    const result = await pool.query(sql, values);
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error in updateAccount:", error);
+    return null;
+  }
+}
+
+async function updatePassword(account_id, newPassword) {
+  try {
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+    const sql = `
+      UPDATE account
+      SET account_password = $1
+      WHERE account_id = $2
+      RETURNING *;
+    `;
+    const values = [hashedPassword, account_id];
+    const result = await pool.query(sql, values);
+    return result.rows[0];
+  } catch (error) {
+    console.error("Error in updatePassword:", error);
+    return null;
+  }
+}
+
 module.exports = {
   getAccountByEmail,
   getAccountById,
   registerAccount,
+  updateAccount,
+  updatePassword,
 };
+

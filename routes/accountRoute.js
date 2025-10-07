@@ -11,8 +11,8 @@ router.get("/login", utilities.handleErrors(accountController.buildLogin));
 // Process login - POST with validation
 router.post(
   "/login",
-  regValidate.loginRules ? regValidate.loginRules() : [],
-  regValidate.checkLoginData ? regValidate.checkLoginData : (req, res, next) => next(),
+  regValidate.loginRules(),
+  regValidate.checkLoginData,
   utilities.handleErrors(accountController.accountLogin)
 );
 
@@ -33,6 +33,45 @@ router.get(
   utilities.checkJWTToken,
   utilities.checkLogin,
   utilities.handleErrors(accountController.accountView)
+);
+
+// Logout route
+router.get('/logout', (req, res) => {
+  res.clearCookie('jwt'); 
+  req.flash('notice', 'You have been logged out.');
+  res.redirect('/'); 
+});
+
+router.get(
+  "/update-account",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.handleErrors(accountController.buildUpdateAccount)
+);
+
+router.post(
+  "/update-account",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  regValidate.updateAccountRules(),  
+  regValidate.checkUpdateAccountData,
+  utilities.handleErrors(accountController.updateAccount)
+);
+
+router.get(
+  "/update-password",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.handleErrors(accountController.buildUpdatePassword)
+);
+
+router.post(
+  "/update-password",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  regValidate.updatePasswordRules(), 
+  regValidate.checkUpdatePasswordData,
+  utilities.handleErrors(accountController.updatePassword)
 );
 
 module.exports = router;

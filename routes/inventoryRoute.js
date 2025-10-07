@@ -1,80 +1,101 @@
-// Needed Resources 
 const express = require("express");
-const router = new express.Router();
+const router = express.Router();
 const invController = require("../controllers/invController");
 const baseController = require("../controllers/baseController");
 const utilities = require("../utilities/");
 const invValidate = require("../utilities/inventory-validation");
 
-// Route to build inventory by classification view
+// View classification for visitors (NO auth)
 router.get(
   "/type/:classificationId",
   utilities.handleErrors(invController.buildByClassificationId)
 );
 
-// Route to build vehicle detail view
+// View vehicle detail for visitors (NO auth)
 router.get(
   "/detail/:inv_id",
   utilities.handleErrors(invController.buildDetail)
 );
 
-// Route to build the management view
+// ==============================
+// PROTECTED ROUTES BELOW
+// Only Admin/Employee can access
+// ==============================
+
 router.get(
   "/",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.checkAccountType,
   utilities.handleErrors(invController.buildManagement)
 );
 
 router.get(
   "/getInventory/:classification_id",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.checkAccountType,
   utilities.handleErrors(invController.getInventoryJSON)
 );
 
-// Route to build the add-classification view
 router.get(
   "/add-classification",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.checkAccountType,
   utilities.handleErrors(invController.buildAddClassification)
 );
 
-// Route to handle classification form POST
 router.post(
   "/add-classification",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.checkAccountType,
   invValidate.classificationRules(),
   invValidate.checkClassificationData,
   utilities.handleErrors(invController.addClassification)
 );
 
-// Route to build the add-inventory view
 router.get(
   "/add-inventory",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.checkAccountType,
   utilities.handleErrors(invController.buildAddInventory)
 );
 
-// Route to handle inventory form POST
 router.post(
   "/add-inventory",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.checkAccountType,
   invValidate.inventoryRules(),
   invValidate.checkInventoryData,
   utilities.handleErrors(invController.addInventory)
 );
 
-// Route to test error handling 
-router.get(
-  "/cause-error",
-  utilities.handleErrors(baseController.throwError)
-);
-
-// Route to build edit-inventory view
 router.get(
   "/edit/:inv_id",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.checkAccountType,
   utilities.handleErrors(invController.editInventoryView)
 );
 
-// Route to process inventory update
 router.post(
   "/update",
+  utilities.checkJWTToken,
+  utilities.checkLogin,
+  utilities.checkAccountType,
   invValidate.inventoryRules(),
   invValidate.checkUpdateData,
   utilities.handleErrors(invController.updateInventory)
+);
+
+// Error trigger 
+router.get(
+  "/cause-error",
+  utilities.handleErrors(baseController.throwError)
 );
 
 module.exports = router;

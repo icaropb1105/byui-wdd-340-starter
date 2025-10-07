@@ -1,31 +1,31 @@
-<h1>Inventory Management</h1>
+<h1>Account Management</h1>
 
-<% if (messages.success && messages.success.length > 0) { %>
-  <% messages.success.forEach(function (msg) { %>
+<% if (messages && messages.length > 0) { %>
+  <% messages.forEach(function (msg) { %>
     <p class="notice success"><%= msg %></p>
   <% }) %>
 <% } %>
 
-<% if (messages.error && messages.error.length > 0) { %>
-  <% messages.error.forEach(function (msg) { %>
-    <p class="notice error"><%= msg %></p>
-  <% }) %>
+<a href="/account/update-account">Edit Account Information</a><br>
+<a href="/account/update-password">Change Password</a><br>
+
+<% if (account && (account.account_type === "Admin" || account.account_type === "Employee")) { %>
+  <h2>Inventory Management</h2>
+  <a href="/inv/add-classification">Add New Classification</a><br>
+  <a href="/inv/add-inventory">Add New Vehicle</a><br>
+
+  <h2>Manage Inventory</h2>
+  <p>Select a classification to see the inventory items.</p>
+
+  <select id="classificationList">
+    <option value="">-- Select Classification --</option>
+    <% classificationSelect.forEach(function(classification) { %>
+      <option value="<%= classification.classification_id %>"><%= classification.classification_name %></option>
+    <% }) %>
+  </select>
+
+  <table id="inventoryDisplay"></table>
+
+  <noscript>JavaScript must be enabled to use this page.</noscript>
+  <script src="/js/inventory.js"></script>
 <% } %>
-
-<a href="/inv/add-classification">Add New Classification</a><br>
-<a href="/inv/add-inventory">Add New Vehicle</a>
-
-<h2>Manage Inventory</h2>
-<p>Select a classification to see the inventory items.</p>
-
-<select id="classificationList">
-  <option value="">-- Select Classification --</option>
-  <% classificationSelect.forEach(function(classification) { %>
-    <option value="<%= classification.classification_id %>"><%= classification.classification_name %></option>
-  <% }) %>
-</select>
-
-<table id="inventoryDisplay"></table>
-
-<noscript>JavaScript must be enabled to use this page.</noscript>
-<script src="/js/inventory.js"></script>

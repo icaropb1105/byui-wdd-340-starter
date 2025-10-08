@@ -7,10 +7,11 @@ const utilities = {};
 /* ************************
  * Constructs the nav HTML unordered list
  ************************** */
-utilities.getNav = async function () {
+utilities.getNav = async function (accountData = null) {
   let data = await invModel.getClassifications();
   let list = "<ul>";
   list += '<li><a href="/" title="Home page">Home</a></li>';
+
   data.rows.forEach((row) => {
     list += "<li>";
     list +=
@@ -23,9 +24,15 @@ utilities.getNav = async function () {
       "</a>";
     list += "</li>";
   });
+
+  if (accountData) {
+    list += `<li><a href="/favorites" title="View your favorite vehicles">Favorites</a></li>`;
+  }
+
   list += "</ul>";
   return list;
 };
+
 
 /* **************************************
  * Build the vehicle detail HTML

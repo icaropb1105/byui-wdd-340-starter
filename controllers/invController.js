@@ -39,10 +39,12 @@ invCont.buildDetail = async function (req, res, next) {
   let nav = await utilities.getNav();
 
   res.render("./inventory/detail", {
-    title: `${data.inv_make} ${data.inv_model}`,
-    nav,
-    vehicleDetail,
-  });
+  title: `${data.inv_make} ${data.inv_model}`,
+  nav,
+  vehicleDetail,
+  inv_id: data.inv_id, 
+});
+
 };
 
 /* Management view */
@@ -125,7 +127,6 @@ invCont.addClassification = async function (req, res) {
 invCont.buildAddInventory = async function (req, res) {
   const nav = await utilities.getNav();
   const classificationData = await invModel.getClassifications();
-  // Aqui construí a lista para usar na view
   const classificationList = await utilities.buildClassificationList();
 
   const messages = {

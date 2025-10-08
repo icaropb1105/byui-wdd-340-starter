@@ -22,6 +22,7 @@ const baseController = require("./controllers/baseController");
 const static = require("./routes/static");
 const inventoryRoute = require("./routes/inventoryRoute");
 const accountRoute = require("./routes/accountRoute");
+const favoritesRoute = require("./routes/favoritesRoute"); // NOVO
 const utilities = require("./utilities");
 const pool = require("./database/");
 
@@ -53,18 +54,19 @@ app.use(function (req, res, next) {
   next();
 });
 
+// JWT Token Check Middleware 
+app.use(utilities.checkJWTToken);
+
 // Global Navigation Middleware
 app.use(async (req, res, next) => {
   try {
-    res.locals.nav = await utilities.getNav();
+    const accountData = res.locals.accountData || null;
+    res.locals.nav = await utilities.getNav(accountData);
     next();
   } catch (error) {
     next(error);
   }
 });
-
-// JWT Token Check Middleware 
-app.use(utilities.checkJWTToken);
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
@@ -93,6 +95,9 @@ app.use("/inv", inventoryRoute);
 
 // Account routes
 app.use("/account", accountRoute);
+
+// Favorites routes (NOVO)
+app.use("/favorites", favoritesRoute);
 
 // 404 Error - Page not found
 app.use(async (req, res, next) => {
